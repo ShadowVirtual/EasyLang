@@ -1,50 +1,72 @@
 {
     "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
     "meta": {
-        "version": "PTDL_v1",
-        "update_url": null
+        "version": "PTDL_v1"
     },
     "exported_at": "2024-07-08T12:00:00+00:00",
-    "name": "EasyLang Discord Bot",
+    "name": "EasyLang",
     "author": "shadowvr@shadowhosting.xyz",
-    "description": "An egg to run Discord bots written in EasyLang, a simple and human-readable programming language designed for ease of use.",
-    "features": null,
-    "images": [
-        "ghcr.io/shadowvirtual/easylang:latest"
-    ],
-    "file_denylist": [],
-    "startup": "python /home/container/src/main.py /home/container/examples/example_code.el {{DISCORD_TOKEN}}",
+    "description": "An egg to run scripts written in EasyLang, a simple and human-readable programming language.",
+    "image": "python:3.9-slim",
+    "startup": "if [[ -d .git ]] && [[ {{AUTO_UPDATE}} == \"1\" ]]; then git pull; fi && pip install -r requirements.txt && python /home/container/src/main.py /home/container/{{SCRIPT_FILENAME}}",
     "config": {
         "files": "{}",
-        "startup": "{\r\n    \"done\": \"Bot is ready!\"\r\n}",
+        "startup": "{\r\n    \"done\": \"Script execution started.\"\r\n}",
         "logs": "{}",
         "stop": "SIGINT"
     },
     "scripts": {
         "installation": {
-            "script": "#!/bin/bash\napt-get update\napt-get install -y python3 python3-pip\npip3 install discord.py\n",
-            "container": "debian:buster-slim",
+            "script": "#!/bin/bash\napt-get update\napt-get install -y git\ncd /mnt/server\nif [[ ! ${INSTALL_REPO} = *.git ]]; then\n  INSTALL_REPO=$(echo -e ${INSTALL_REPO} | sed 's:/ *$::')\n  INSTALL_REPO=\"${INSTALL_REPO}.git\"\nfi\n\necho -e \"Working on installing from ${INSTALL_REPO}\"\n\nif [ \"${USER_UPLOAD}\" == \"true\" ] || [ \"${USER_UPLOAD}\" == \"1\" ]; then\n  echo -e \"Assuming user knows what they are doing. Have a good day.\"\n  exit 0\nelse\n  if [ \"$(ls -A /mnt/server)\" ]; then\n    echo -e \"/mnt/server directory is not empty.\"\n    if [ -d .git ]; then\n      echo -e \".git directory exists\"\n      if [ -f .git/config ]; then\n        echo -e \"Loading info from git config\"\n        ORIGIN=$(git config --get remote.origin.url)\n      else\n        echo -e \"Files found with no git config\"\n        echo -e \"Closing out without touching things to not break anything\"\n        exit 10\n      fi\n    fi\n    if [ \"${ORIGIN}\" == \"${INSTALL_REPO}\" ]; then\n      echo \"Pulling latest from github\"\n      git pull\n      echo -e \"Updating local python modules\"\n      pip install -r requirements.txt\n    fi\n  else\n    echo -e \"/mnt/server is empty.\\nCloning files into repo\"\n    if [ -z ${INSTALL_BRANCH} ]; then\n      echo -e \"Assuming main branch\"\n      INSTALL_BRANCH=main\n    fi\n\n    echo -e \"Running 'git clone --single-branch --branch ${INSTALL_BRANCH} ${INSTALL_REPO} .'\"\n    git clone --single-branch --branch ${INSTALL_BRANCH} ${INSTALL_REPO} .\n    echo -e \"Installing python modules locally\"\n    pip install -r requirements.txt\n  fi\nfi\n\necho -e \"Install complete\"\nexit 0",
+            "container": "python:3.9-slim",
             "entrypoint": "bash"
         }
     },
     "variables": [
         {
-            "name": "Discord Bot Token",
-            "description": "The token for your Discord bot.",
-            "env_variable": "DISCORD_TOKEN",
-            "default_value": "",
-            "user_viewable": true,
-            "user_editable": true,
-            "rules": "required|string|max:200"
+            "name": "Install Repo",
+            "description": "The git repo to clone and install the EasyLang scripts from",
+            "env_variable": "INSTALL_REPO",
+            "default_value": "https://github.com/ShadowVirtual/EasyLang",
+            "user_viewable": 1,
+            "user_editable": 1,
+            "rules": "nullable|string|max:128"
         },
         {
-            "name": "EasyLang Script File",
-            "description": "The filename of your EasyLang script.",
-            "env_variable": "BOT_FILENAME",
+            "name": "Install Branch",
+            "description": "The branch of the repo to install",
+            "env_variable": "INSTALL_BRANCH",
+            "default_value": "main",
+            "user_viewable": 1,
+            "user_editable": 1,
+            "rules": "nullable|string|max:32"
+        },
+        {
+            "name": "User Uploaded Files",
+            "description": "Skip the install process if user uploads their own files.\r\n\r\n0 = false (default)\r\n1 = true",
+            "env_variable": "USER_UPLOAD",
+            "default_value": "0",
+            "user_viewable": 1,
+            "user_editable": 1,
+            "rules": "required|bool"
+        },
+        {
+            "name": "Auto Update",
+            "description": "When using a git repo, pull the latest files on startup.",
+            "env_variable": "AUTO_UPDATE",
+            "default_value": "0",
+            "user_viewable": 1,
+            "user_editable": 1,
+            "rules": "required|boolean"
+        },
+        {
+            "name": "Script Filename",
+            "description": "The filename of the EasyLang script to run.",
+            "env_variable": "SCRIPT_FILENAME",
             "default_value": "example_code.el",
-            "user_viewable": true,
-            "user_editable": true,
-            "rules": "required|string|max:100"
+            "user_viewable": 1,
+            "user_editable": 1,
+            "rules": "required|string"
         }
     ]
 }
