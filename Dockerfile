@@ -7,4 +7,4 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-CMD ["python", "src/main.py", "examples/example_code.txt"]
+ENTRYPOINT ["/entrypoint.sh"]
