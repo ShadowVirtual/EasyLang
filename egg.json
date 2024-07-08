@@ -10,7 +10,7 @@
     "description": "An egg to run Discord bots written in EasyLang, a simple and human-readable programming language designed for ease of use.",
     "features": null,
     "images": [
-        "ghcr.io/shadowvr/easylang-discord-bot"
+        "ghcr.io/shadowvirtual/easylang:latest"
     ],
     "file_denylist": [],
     "startup": "python /home/container/src/main.py /home/container/examples/example_code.el {{DISCORD_TOKEN}}",
