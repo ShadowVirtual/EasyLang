@@ -1,0 +1,6 @@
+let x = 5
+const party = true
+if party {
+    print x
+    sendMessage general, "Party time!"
+}

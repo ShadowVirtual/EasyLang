@@ -1,0 +1,34 @@
+{
+    "_comment": "This is a Pterodactyl egg for my custom programming language.",
+    "meta": {
+      "version": "1.0.0",
+      "update_url": null
+    },
+    "export": {
+      "include": [
+        "src/*",
+        "examples/*",
+        "requirements.txt",
+        "Dockerfile"
+      ]
+    },
+    "scripts": {
+      "installation": {
+        "script": "#!/bin/bash\n\napt-get update\napt-get install -y docker.io\n",
+        "container": "debian:latest",
+        "entrypoint": "/bin/bash"
+      }
+    },
+    "variables": [
+      {
+        "name": "DISCORD_TOKEN",
+        "description": "The token for your Discord bot.",
+        "env_variable": "DISCORD_TOKEN",
+        "default_value": "",
+        "user_viewable": true,
+        "user_editable": true,
+        "rules": "required|string|max:200"
+      }
+    ]
+  }
+  
